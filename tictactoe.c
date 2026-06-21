@@ -1,8 +1,25 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
+void instructions(char board[3][3]){
+    // Print game instructions 
+
+    printf("\nWelcome to Tic Tac Toe\n");
+    printf("The move positions of this game are as follows:\n");
+    printf("Enter 'quit' to exit the game early\n");
+
+    char position = '0';
+    for (int row = 0; row < 3; row++){
+        for (int col = 0; col < 3; col++){
+            position++;
+            board[row][col] = position;
+        }
+    }
+}
+
 void initialize_board(char board[3][3]){
-    // set up initial board 
+    // set up initial game board 
 
     for (int row = 0; row < 3; row++){
         for (int col = 0; col < 3; col++){
@@ -20,12 +37,6 @@ void print_board(char board[3][3]){
         printf(" -----------\n");
     }
     printf("\n");
-}
-
-void update_board(char board[3][3], char player, int x, int y){
-    // update position of board array
-
-    board[x][y] = player;
 }
 
 void get_coor(int sequential_index, int* x, int* y){
@@ -74,7 +85,8 @@ int check_win(char board[3][3]){
 }
 
 int check_filled(char board[3][3]){
-    // Checks all positions of board for 
+    // Checks board for open spots
+
     for (int row = 0; row < 3; row++){
         for (int col = 0; col < 3; col++){
             if (board[row][col] != 'X' && board[row][col] != 'O'){
@@ -96,57 +108,77 @@ void switch_player(char* player){
     }
 }
 
-int main(){
-    char board[3][3];
-    char player = 'O';
+int play_tictactoe(){
+    int move;
+    char input[6];
+ 
     int game = 0;
-    char buffer[10];
+    char player = 'O';
+    
+    char board[3][3];
     int row, col;
 
     // initialize game
-    initialize_board(board);
+    instructions(board);
     print_board(board);
+
+    initialize_board(board);
 
     // Game loop
     while (game == 0){
-        int move;
-
+        printf("Current Player is %c\n", player);
         printf("Enter a move: ");
 
-        // Validate input
-        if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
-            break; // Handle potential EOF/error
+        // Read line using fgets
+        if (fgets(input, sizeof(input), stdin) == NULL) {
+            break; 
         }
 
-        if (sscanf(buffer, "%d", &move) != 1){
-            printf("Issue: That is not a number\n");
+        // strip newline from input buffer
+        input[strcspn(input, "\r\n")] = '\0';
+
+        // check for text command
+        if (strcmp(input, "quit") == 0){
+            printf("\033[2J\033[H");
+            break;
+
+        }
+        
+        // else try parsing as a number
+        if (sscanf(input, "%d", &move) == 1){
+            if (move < 0 || move > 9){
+                print_board(board);
+                printf("\nIssue: Move out of bounds. Try again\n\n");
+                continue;
+            }
+        }
+        else{
+            print_board(board);
+            printf("Invalid input, try again");
             continue;
         }
 
-        if (move < 0 || move > 9){
-            printf("Issue: Move is out of bounds\n");
-            continue;
-        }
- 
         // Update board
         get_coor(move, &row, &col);
         if ((board[row][col]) == ' '){
-            update_board(board, player, row, col);
+            board[row][col] = player;
+            print_board(board);
         }
         else{
-            printf("Spot already occupied by %c\n", board[row][col]);
+            print_board(board);
+            printf("\nSpot already occupied by %c\n\n", board[row][col]);
             continue;
         }
 
-        print_board(board);
-
+        // Game Conditions
         // Check win
         if (check_win(board)){
             printf("Player %c WINS!\n", player);
             break;
         }
+
         // Check tie
-            // if one won and board is filled, then tie.
+        // if one won and board is filled, then tie.
         if (check_filled(board)){
             printf("Game has tied\n");
             break;
@@ -156,5 +188,8 @@ int main(){
         switch_player(&player);
     }
     return 0;
+}
 
+int main(){
+    play_tictactoe();
 }
