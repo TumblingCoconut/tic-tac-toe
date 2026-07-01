@@ -154,7 +154,7 @@ int play_tictactoe(){
         }
         else{
             print_board(board);
-            printf("Invalid input, try again");
+            printf("Invalid input, try again\n");
             continue;
         }
 
